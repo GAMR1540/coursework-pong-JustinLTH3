@@ -1,5 +1,7 @@
 #include "GameEngine.h"
 
+void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt);
+
 GameEngine::GameEngine(sf::RenderWindow& window)
 	: m_window(window),
 	m_paddle1(sf::Vector2f(20, window.getSize().y / 2.f), 10, 100, sf::Color::White),
@@ -17,6 +19,7 @@ GameEngine::GameEngine(sf::RenderWindow& window)
 	m_hud.setPosition((m_window.getSize().x / 2.f) - 45.f, 10);
 
 	m_paddle1.setSpeed(1000.f);
+	m_paddle2.setSpeed(1000.f);
 
 }
 
@@ -58,7 +61,52 @@ void GameEngine::update()
 
 	m_hud.setString(ss.str());
 }
-
+void checkBounce(Paddle& paddle, Ball& ball)
+{
+	sf::FloatRect intersection;
+	if (!paddle.getBounds().intersects(ball.getShape().getGlobalBounds(), intersection))
+		return;
+	if (intersection.height > intersection.width)
+	{
+		if (paddle.getShape().getPosition().x
+			< ball.getShape().getPosition().x)
+		{
+			ball.bounce(0, -1);
+			return;
+		}
+		else
+		{
+			ball.bounce(0, 1);
+			return;
+		}
+	}
+	if (intersection.height < intersection.width)
+	{
+		if (paddle.getShape().getPosition().y
+			< ball.getShape().getPosition().y)
+		{
+			ball.bounce(1, 0);
+			return;
+		}
+		else
+		{
+			ball.bounce(-1, 0);
+			return;
+		}
+	}
+	if (paddle.getShape().getPosition().y
+		< ball.getShape().getPosition().y)
+	{
+		ball.bounce(1, 0);
+	}
+	else ball.bounce(-1, 0);
+	if (paddle.getShape().getPosition().x
+		< ball.getShape().getPosition().x)
+	{
+		ball.bounce(0, -1);
+	}
+	else ball.bounce(0, 1);
+}
 void GameEngine::run()
 {
 	float dt;
@@ -83,82 +131,22 @@ void GameEngine::run()
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))m_paddle1.move(dt, 0);
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))m_paddle1.move(dt, m_window.getSize().y);
 
+			NPCMove(m_ball, m_window, m_paddle2, dt);
 			m_ball.move(dt, m_window);
-
-			sf::FloatRect intersection;
-			if (m_paddle1.getBounds().intersects(m_ball.getShape().getGlobalBounds(), intersection))
+			int m_ball_pos_x = m_ball.getPosition().x;
+			if (m_ball_pos_x < 0)
 			{
-				if (intersection.height > intersection.width)
-				{
-					if (m_paddle1.getShape().getPosition().x
-						< m_ball.getShape().getPosition().x)
-					{
-						m_ball.bounce(0, -1);
-					}
-					else m_ball.bounce(0, 1);
-				}
-				else if (intersection.height < intersection.width)
-				{
-					if (m_paddle1.getShape().getPosition().y
-						< m_ball.getShape().getPosition().y)
-					{
-						m_ball.bounce(1, 0);
-					}
-					else m_ball.bounce(-1, 0);
-				}
-				else
-				{
-					if (m_paddle1.getShape().getPosition().y
-						< m_ball.getShape().getPosition().y)
-					{
-						m_ball.bounce(1, 0);
-					}
-					else m_ball.bounce(-1, 0);
-					if (m_paddle1.getShape().getPosition().x
-						< m_ball.getShape().getPosition().x)
-					{
-						m_ball.bounce(0, -1);
-					}
-					else m_ball.bounce(0, 1);
-				}
+				m_p2Score++;
+				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
 			}
-			if (m_paddle2.getBounds().intersects(m_ball.getShape().getGlobalBounds(), intersection))
+			else if (m_ball_pos_x > m_window.getSize().x)
 			{
-				if (intersection.height > intersection.width)
-				{
-					if (m_paddle2.getShape().getPosition().x
-						< m_ball.getShape().getPosition().x)
-					{
-						m_ball.bounce(0, -1);
-					}
-					else m_ball.bounce(0, 1);
-				}
-				else if (intersection.height < intersection.width)
-				{
-					if (m_paddle2.getShape().getPosition().y
-						< m_ball.getShape().getPosition().y)
-					{
-						m_ball.bounce(1, 0);
-					}
-					else m_ball.bounce(-1, 0);
-				}
-				else
-				{
-					if (m_paddle2.getShape().getPosition().y
-						< m_ball.getShape().getPosition().y)
-					{
-						m_ball.bounce(1, 0);
-					}
-					else m_ball.bounce(-1, 0);
-					if (m_paddle2.getShape().getPosition().x
-						< m_ball.getShape().getPosition().x)
-					{
-						m_ball.bounce(0, -1);
-					}
-					else m_ball.bounce(0, 1);
-				}
+				m_p1Score++;
+				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
 			}
 
+			checkBounce(m_paddle1, m_ball);
+			checkBounce(m_paddle2, m_ball);
 		}
 
 
@@ -166,5 +154,40 @@ void GameEngine::run()
 		update();
 		// draw shapes to screen
 		draw();
+	}
+}
+
+void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt)
+{
+	sf::Vector2f vel = ball.GetVelocity();
+	sf::Vector2f pos = ball.getPosition();
+	if (vel.x < 0)return;
+	if (ball.getPosition().x < window.getSize().x / 2)return;
+	float y = paddle.getShape().getPosition().x - ball.getPosition().x + ball.getShape().getRadius();
+	y = y / vel.x * vel.y;
+	y += pos.y;
+	std::cout << y << ' ' << window.getSize().y;
+	while (true)
+	{
+		if (y < 1)
+		{
+			y = -y;
+			continue;
+		}
+		if (y > window.getSize().y - 1 - ball.getShape().getRadius() * 2)
+		{
+			y = window.getSize().y - y + 1;
+			continue;
+		}
+		if (y > 1 && !(y > window.getSize().y - 1 - ball.getShape().getRadius() * 2)) break;
+	}
+	std::cout << y << std::endl;
+	if (paddle.getShape().getPosition().y > y)
+	{
+		paddle.move(dt, 0);
+	}
+	else if (paddle.getShape().getPosition().y < y)
+	{
+		paddle.move(dt, window.getSize().y);
 	}
 }

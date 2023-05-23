@@ -14,7 +14,6 @@ public:
 	void move(float dt, float windowYVal);
 	sf::FloatRect getBounds() const;
 	sf::RectangleShape getShape();
-
 	void setSpeed(float speed);
 };
 

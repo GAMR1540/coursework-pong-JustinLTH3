@@ -10,7 +10,6 @@ Ball::Ball(sf::Vector2f position, float radius, float speed, sf::Color color)
 	m_shape.setFillColor(color);
 	m_shape.setOrigin(m_shape.getRadius() / 2, m_shape.getRadius() / 2);
 }
-
 void Ball::draw(sf::RenderWindow& window)
 {
 	window.draw(m_shape);

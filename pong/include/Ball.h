@@ -13,6 +13,7 @@ public:
 
 	sf::Vector2f getPosition();
 	void setPosition(float x, float y);
+	const sf::Vector2f GetVelocity()const { return m_velocity; }
 
 	void updateVelocity(float val);
 	void bounce(int up, int right);
