@@ -45,6 +45,24 @@ sf::CircleShape Ball::getShape()
 	return m_shape;
 }
 
-
+void Ball::bounce(int up, int right)//indecate where the ball hit
+{
+	if (up == 1)
+	{
+		m_velocity.y = abs(m_velocity.y);
+	}
+	else if (up == -1)
+	{
+		m_velocity.y = -abs(m_velocity.y);
+	}
+	if (right == 1)
+	{
+		m_velocity.x = -abs(m_velocity.x);
+	}
+	else if (right == -1)
+	{
+		m_velocity.x = abs(m_velocity.x);
+	}
+}
 
 

@@ -15,6 +15,7 @@ public:
 	void setPosition(float x, float y);
 
 	void updateVelocity(float val);
+	void bounce(int up, int right);
 	sf::CircleShape getShape();
 };
 

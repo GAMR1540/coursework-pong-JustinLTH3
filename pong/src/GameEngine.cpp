@@ -36,24 +36,24 @@ void GameEngine::update()
 	std::stringstream ss;
 	switch (m_gStates)
 	{
-		case GameEngine::intro:
-			ss << "Press the Space\nkey to start";
-			break;
-		case GameEngine::playing:
-			ss << m_p1Score << " - " << m_p2Score;
-			break;
-		case GameEngine::gameOver:
-			if (m_p1Score > m_p2Score)
-			{
-				ss << "Player 1 wins";
-			}
-			else
-			{
-				ss << "Player 2 wins";
-			}
-			break;
-		default:
-			break;
+	case GameEngine::intro:
+		ss << "Press the Space\nkey to start";
+		break;
+	case GameEngine::playing:
+		ss << m_p1Score << " - " << m_p2Score;
+		break;
+	case GameEngine::gameOver:
+		if (m_p1Score > m_p2Score)
+		{
+			ss << "Player 1 wins";
+		}
+		else
+		{
+			ss << "Player 2 wins";
+		}
+		break;
+	default:
+		break;
 	}
 
 	m_hud.setString(ss.str());
@@ -80,9 +80,87 @@ void GameEngine::run()
 		// ADD YOUR CODE HERE !!!
 		if (m_gStates == GameStates::playing)
 		{
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))m_paddle1.move(dt, 0);
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))m_paddle1.move(dt, m_window.getSize().y);
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))m_paddle1.move(dt, 0);
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))m_paddle1.move(dt, m_window.getSize().y);
+
+			m_ball.move(dt, m_window);
+
+			sf::FloatRect intersection;
+			if (m_paddle1.getBounds().intersects(m_ball.getShape().getGlobalBounds(), intersection))
+			{
+				if (intersection.height > intersection.width)
+				{
+					if (m_paddle1.getShape().getPosition().x
+						< m_ball.getShape().getPosition().x)
+					{
+						m_ball.bounce(0, -1);
+					}
+					else m_ball.bounce(0, 1);
+				}
+				else if (intersection.height < intersection.width)
+				{
+					if (m_paddle1.getShape().getPosition().y
+						< m_ball.getShape().getPosition().y)
+					{
+						m_ball.bounce(1, 0);
+					}
+					else m_ball.bounce(-1, 0);
+				}
+				else
+				{
+					if (m_paddle1.getShape().getPosition().y
+						< m_ball.getShape().getPosition().y)
+					{
+						m_ball.bounce(1, 0);
+					}
+					else m_ball.bounce(-1, 0);
+					if (m_paddle1.getShape().getPosition().x
+						< m_ball.getShape().getPosition().x)
+					{
+						m_ball.bounce(0, -1);
+					}
+					else m_ball.bounce(0, 1);
+				}
+			}
+			if (m_paddle2.getBounds().intersects(m_ball.getShape().getGlobalBounds(), intersection))
+			{
+				if (intersection.height > intersection.width)
+				{
+					if (m_paddle2.getShape().getPosition().x
+						< m_ball.getShape().getPosition().x)
+					{
+						m_ball.bounce(0, -1);
+					}
+					else m_ball.bounce(0, 1);
+				}
+				else if (intersection.height < intersection.width)
+				{
+					if (m_paddle2.getShape().getPosition().y
+						< m_ball.getShape().getPosition().y)
+					{
+						m_ball.bounce(1, 0);
+					}
+					else m_ball.bounce(-1, 0);
+				}
+				else
+				{
+					if (m_paddle2.getShape().getPosition().y
+						< m_ball.getShape().getPosition().y)
+					{
+						m_ball.bounce(1, 0);
+					}
+					else m_ball.bounce(-1, 0);
+					if (m_paddle2.getShape().getPosition().x
+						< m_ball.getShape().getPosition().x)
+					{
+						m_ball.bounce(0, -1);
+					}
+					else m_ball.bounce(0, 1);
+				}
+			}
+
 		}
+
 
 		// update hud
 		update();
