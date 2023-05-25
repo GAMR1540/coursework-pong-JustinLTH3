@@ -22,12 +22,14 @@
     <ClInclude Include="include\Ball.h" />
     <ClInclude Include="include\GameEngine.h" />
     <ClInclude Include="include\Paddle.h" />
+    <ClInclude Include="include\Vector2Func.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ball.cpp" />
     <ClCompile Include="src\GameEngine.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Paddle.cpp" />
+    <ClCompile Include="src\Vector2Func.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

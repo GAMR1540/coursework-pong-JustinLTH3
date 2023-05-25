@@ -24,6 +24,9 @@
     <ClInclude Include="include\Ball.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Vector2Func.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Paddle.cpp">
@@ -36,6 +39,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Ball.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vector2Func.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

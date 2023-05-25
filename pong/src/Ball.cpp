@@ -1,10 +1,16 @@
 #include "Ball.h"
+#include <Vector2Func.h>
 
 Ball::Ball(sf::Vector2f position, float radius, float speed, sf::Color color)
 {
-	m_speed = speed;
-	m_velocity.x = speed;
-	m_velocity.y = speed;
+	// random direction
+	srand((unsigned)time(NULL));
+	m_velocity.x = (rand() % 10 + 1) * (rand() % 2) > 0 ? 1 : -1;
+	m_velocity.y = (rand() % 10 + 1) * (rand() % 2) > 0 ? 1 : -1;
+	setSpeed(speed);
+	updateVelocity();
+
+
 	m_shape.setRadius(radius);
 	m_shape.setPosition(position);
 	m_shape.setFillColor(color);
@@ -19,9 +25,14 @@ void Ball::move(float dt, sf::RenderWindow& window)
 {
 	m_shape.move(m_velocity * dt);
 
-	if (m_shape.getPosition().y < 1 ||
-		m_shape.getPosition().y + m_shape.getRadius() * 2 > window.getSize().y - 1)
-		m_velocity.y = -m_velocity.y;
+	if (m_shape.getPosition().y < 1)
+	{
+		bounce(1, 0);
+	}
+	else if (m_shape.getPosition().y > window.getSize().y - 1 - getShape().getRadius())
+	{
+		bounce(-1, 0);
+	}
 }
 
 sf::Vector2f Ball::getPosition()
@@ -34,17 +45,26 @@ void Ball::setPosition(float x, float y)
 	m_shape.setPosition(x, y);
 }
 
-void Ball::updateVelocity(float val)
+void Ball::setSpeed(float val)
 {
-	m_velocity.x = m_speed * val;
+	m_speed = val;
+	updateVelocity();
+}
+
+void Ball::updateVelocity()
+{
+	m_velocity = m_speed * Vector2Func::normalize(m_velocity);
 }
 
 sf::CircleShape Ball::getShape()
 {
 	return m_shape;
 }
-
-void Ball::bounce(int up, int right)//indecate where the ball hit
+/*indecate where the ball hit
+	up, right: 1
+	down, left: -1
+*/
+void Ball::bounce(int up, int right)
 {
 	if (up == 1)
 	{
@@ -62,6 +82,6 @@ void Ball::bounce(int up, int right)//indecate where the ball hit
 	{
 		m_velocity.x = abs(m_velocity.x);
 	}
+	//increase speed when bounce
+	setSpeed(m_speed + .1f);
 }
-
-

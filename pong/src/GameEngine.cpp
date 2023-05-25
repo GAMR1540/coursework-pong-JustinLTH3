@@ -1,6 +1,10 @@
 #include "GameEngine.h"
 
-void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt);
+void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, float& prediction, bool& predicted);
+bool checkBounce(Paddle& paddle, Ball& ball);
+
+bool predicted = false;
+float prediction;
 
 GameEngine::GameEngine(sf::RenderWindow& window)
 	: m_window(window),
@@ -20,7 +24,8 @@ GameEngine::GameEngine(sf::RenderWindow& window)
 
 	m_paddle1.setSpeed(1000.f);
 	m_paddle2.setSpeed(1000.f);
-
+	m_ballBuffer.loadFromFile(".\\assets\\audio\\beep.flac");
+	m_ballSound.setBuffer(m_ballBuffer);
 }
 
 void GameEngine::draw()
@@ -61,51 +66,26 @@ void GameEngine::update()
 
 	m_hud.setString(ss.str());
 }
-void checkBounce(Paddle& paddle, Ball& ball)
+bool checkBounce(Paddle& paddle, Ball& ball)
 {
 	sf::FloatRect intersection;
+	sf::Vector2f paddlePos = paddle.getShape().getPosition();
+	sf::Vector2f ballPos = ball.getShape().getPosition();
 	if (!paddle.getBounds().intersects(ball.getShape().getGlobalBounds(), intersection))
-		return;
+		return false;
 	if (intersection.height > intersection.width)
 	{
-		if (paddle.getShape().getPosition().x
-			< ball.getShape().getPosition().x)
-		{
-			ball.bounce(0, -1);
-			return;
-		}
-		else
-		{
-			ball.bounce(0, 1);
-			return;
-		}
+		ball.bounce(0, (paddlePos.x < ballPos.x) ? -1 : 1);
+		return true;
 	}
 	if (intersection.height < intersection.width)
 	{
-		if (paddle.getShape().getPosition().y
-			< ball.getShape().getPosition().y)
-		{
-			ball.bounce(1, 0);
-			return;
-		}
-		else
-		{
-			ball.bounce(-1, 0);
-			return;
-		}
+		ball.bounce((paddlePos.y < ballPos.y ? 1 : -1), 0);
+		return true;
 	}
-	if (paddle.getShape().getPosition().y
-		< ball.getShape().getPosition().y)
-	{
-		ball.bounce(1, 0);
-	}
-	else ball.bounce(-1, 0);
-	if (paddle.getShape().getPosition().x
-		< ball.getShape().getPosition().x)
-	{
-		ball.bounce(0, -1);
-	}
-	else ball.bounce(0, 1);
+	ball.bounce((paddlePos.y < ballPos.y ? 1 : -1)
+		, (paddlePos.x < ballPos.x ? -1 : 1));
+	return true;
 }
 void GameEngine::run()
 {
@@ -131,25 +111,25 @@ void GameEngine::run()
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))m_paddle1.move(dt, 0);
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))m_paddle1.move(dt, m_window.getSize().y);
 
-			NPCMove(m_ball, m_window, m_paddle2, dt);
+			NPCMove(m_ball, m_window, m_paddle2, dt, prediction, predicted);
 			m_ball.move(dt, m_window);
 			int m_ball_pos_x = m_ball.getPosition().x;
 			if (m_ball_pos_x < 0)
 			{
 				m_p2Score++;
 				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
+				predicted = false;
 			}
 			else if (m_ball_pos_x > m_window.getSize().x)
 			{
 				m_p1Score++;
 				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
+				predicted = false;
 			}
 
-			checkBounce(m_paddle1, m_ball);
-			checkBounce(m_paddle2, m_ball);
+			if (checkBounce(m_paddle1, m_ball))m_ballSound.play();
+			if (checkBounce(m_paddle2, m_ball))m_ballSound.play();
 		}
-
-
 		// update hud
 		update();
 		// draw shapes to screen
@@ -157,37 +137,46 @@ void GameEngine::run()
 	}
 }
 
-void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt)
+void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, float& prediction, bool& predicted)
 {
-	sf::Vector2f vel = ball.GetVelocity();
-	sf::Vector2f pos = ball.getPosition();
-	if (vel.x < 0)return;
-	if (ball.getPosition().x < window.getSize().x / 2)return;
-	float y = paddle.getShape().getPosition().x - ball.getPosition().x + ball.getShape().getRadius();
-	y = y / vel.x * vel.y;
-	y += pos.y;
-	std::cout << y << ' ' << window.getSize().y;
-	while (true)
+	sf::Vector2f ballVel = ball.GetVelocity();
+	sf::Vector2f ballPos = ball.getPosition();
+	sf::Vector2f paddlePos = paddle.getShape().getPosition();
+	sf::Vector2u winSize = window.getSize();
+	if (ballVel.x < 0)
 	{
-		if (y < 1)
-		{
-			y = -y;
-			continue;
-		}
-		if (y > window.getSize().y - 1 - ball.getShape().getRadius() * 2)
-		{
-			y = window.getSize().y - y + 1;
-			continue;
-		}
-		if (y > 1 && !(y > window.getSize().y - 1 - ball.getShape().getRadius() * 2)) break;
+		predicted = false;
+		return;
 	}
-	std::cout << y << std::endl;
-	if (paddle.getShape().getPosition().y > y)
+	if (ballPos.x < winSize.x / 2)return;
+
+	if (!predicted)
+	{
+		prediction = paddlePos.x - ballPos.x;
+		prediction = prediction / ballVel.x * ballVel.y;
+		prediction += ballPos.y;
+	}
+
+	while (!predicted)
+	{
+		if (prediction < 1)
+		{
+			prediction = 1 - prediction;
+			continue;
+		}
+		if (prediction > winSize.y - 1 - ball.getShape().getRadius())
+		{
+			prediction = (winSize.y - 1 - ball.getShape().getRadius()) * 2 - prediction;
+			continue;
+		}
+		if (prediction > 1 && !(prediction > winSize.y - 1 - ball.getShape().getRadius())) predicted = true;
+	}
+	if (paddlePos.y > prediction)
 	{
 		paddle.move(dt, 0);
 	}
-	else if (paddle.getShape().getPosition().y < y)
+	else if (paddlePos.y < prediction)
 	{
-		paddle.move(dt, window.getSize().y);
+		paddle.move(dt, winSize.y);
 	}
 }
