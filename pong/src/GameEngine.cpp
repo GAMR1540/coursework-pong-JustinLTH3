@@ -1,8 +1,13 @@
 #include "GameEngine.h"
+#include "Vector2Func.h"
 
+
+
+//predict where the ball goes and move the npc paddle
 void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, float& prediction, bool& predicted);
-bool checkBounce(Paddle& paddle, Ball& ball);
 
+//check if the ball hit the paddle. If true, call ball.bounce
+bool checkBounce(Paddle& paddle, Ball& ball);
 bool predicted = false;
 float prediction;
 
@@ -44,13 +49,13 @@ void GameEngine::update()
 	std::stringstream ss;
 	switch (m_gStates)
 	{
-	case GameEngine::intro:
+	case GameStates::intro:
 		ss << "Press the Space\nkey to start";
 		break;
-	case GameEngine::playing:
+	case GameStates::playing:
 		ss << m_p1Score << " - " << m_p2Score;
 		break;
-	case GameEngine::gameOver:
+	case GameStates::gameOver:
 		if (m_p1Score > m_p2Score)
 		{
 			ss << "Player 1 wins";
@@ -68,24 +73,35 @@ void GameEngine::update()
 }
 bool checkBounce(Paddle& paddle, Ball& ball)
 {
-	sf::FloatRect intersection;
 	sf::Vector2f paddlePos = paddle.getShape().getPosition();
 	sf::Vector2f ballPos = ball.getShape().getPosition();
-	if (!paddle.getBounds().intersects(ball.getShape().getGlobalBounds(), intersection))
-		return false;
-	if (intersection.height > intersection.width)
+	float ballRadius = ball.getShape().getRadius();
+	sf::Vector2f distance(abs(paddlePos.x - ballPos.x), abs(paddlePos.y - ballPos.y));
+
+	if (distance.y > (paddle.getBounds().height / 2 + ballRadius))return false;
+	if (distance.x > (paddle.getBounds().width / 2 + ballRadius))return false;
+	if (distance.y <= paddle.getBounds().height / 2)
 	{
 		ball.bounce(0, (paddlePos.x < ballPos.x) ? -1 : 1);
 		return true;
 	}
-	if (intersection.height < intersection.width)
+	if (distance.x <= paddle.getBounds().width / 2)
 	{
 		ball.bounce((paddlePos.y < ballPos.y ? 1 : -1), 0);
 		return true;
 	}
-	ball.bounce((paddlePos.y < ballPos.y ? 1 : -1)
-		, (paddlePos.x < ballPos.x ? -1 : 1));
-	return true;
+
+	float tempx = (distance.x - paddle.getBounds().width / 2);
+	float tempy = (distance.y - paddle.getBounds().height / 2);
+	//the distance from the center of circle to the corner of the paddle
+	float cornerDisSqr = tempx * tempx + tempy * tempy;
+	if (cornerDisSqr <= ballRadius * ballRadius)//check if the sphere hit the corner of the rectangle
+	{
+		ball.bounce((paddlePos.y < ballPos.y ? 1 : -1)
+			, (paddlePos.x < ballPos.x ? -1 : 1));
+		return true;
+	}
+	return false;
 }
 void GameEngine::run()
 {
@@ -102,10 +118,13 @@ void GameEngine::run()
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 				m_window.close();
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+			{
 				m_gStates = GameStates::playing;
+				m_p1Score = 0;
+				m_p2Score = 0;
+			}
 		}
 
-		// ADD YOUR CODE HERE !!!
 		if (m_gStates == GameStates::playing)
 		{
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))m_paddle1.move(dt, 0);
@@ -119,14 +138,23 @@ void GameEngine::run()
 				m_p2Score++;
 				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
 				predicted = false;
+				if (m_p2Score == 11)
+				{
+					m_gStates = GameStates::gameOver;
+				}
 			}
 			else if (m_ball_pos_x > m_window.getSize().x)
 			{
 				m_p1Score++;
 				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
 				predicted = false;
+				if (m_p1Score == 11)
+				{
+					m_gStates = GameStates::gameOver;
+				}
 			}
 
+			//if ball hits paddle, play the sound.
 			if (checkBounce(m_paddle1, m_ball))m_ballSound.play();
 			if (checkBounce(m_paddle2, m_ball))m_ballSound.play();
 		}
@@ -156,7 +184,7 @@ void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, flo
 		prediction = prediction / ballVel.x * ballVel.y;
 		prediction += ballPos.y;
 	}
-
+	//only predict when not predicted already
 	while (!predicted)
 	{
 		if (prediction < 1)
@@ -171,6 +199,7 @@ void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, flo
 		}
 		if (prediction > 1 && !(prediction > winSize.y - 1 - ball.getShape().getRadius())) predicted = true;
 	}
+	//move towards prediction
 	if (paddlePos.y > prediction)
 	{
 		paddle.move(dt, 0);

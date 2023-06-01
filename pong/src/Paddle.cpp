@@ -17,10 +17,10 @@ void Paddle::draw(sf::RenderWindow& window)
 
 void Paddle::move(float dt, float windowYVal)
 {
-	if (m_shape.getPosition().y - m_shape.getSize().y / 2 > windowYVal)
+	if (m_shape.getPosition().y - m_shape.getSize().y / 2 > windowYVal)//check if the paddle meets the top
 		m_shape.move(0, -m_speed * dt);
 
-	if (m_shape.getPosition().y + m_shape.getSize().y / 2 < windowYVal)
+	if (m_shape.getPosition().y + m_shape.getSize().y / 2 < windowYVal)//check if the paddle meets the bottom
 		m_shape.move(0, m_speed * dt);
 }
 

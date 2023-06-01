@@ -22,7 +22,7 @@ private:
 	int m_p1Score;
 	int m_p2Score;
 	static const int m_maxScore = 3;
-	enum GameStates {intro, playing, gameOver};
+	enum class GameStates { intro, playing, gameOver };
 	GameStates m_gStates;
 public:
 	GameEngine(sf::RenderWindow& window);

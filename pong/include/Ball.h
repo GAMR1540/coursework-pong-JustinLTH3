@@ -10,7 +10,7 @@ public:
 	Ball(sf::Vector2f position, float radius, float speed, sf::Color color);
 	void draw(sf::RenderWindow& window);
 	void move(float dt, sf::RenderWindow& window);
-	const float MAXSPEED = 5.0;
+	const float MAXSPEED = 750.0;
 	sf::Vector2f getPosition();
 	void setPosition(float x, float y);
 	const sf::Vector2f GetVelocity()const { return m_velocity; }

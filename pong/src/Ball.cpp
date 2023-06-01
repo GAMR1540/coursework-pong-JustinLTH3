@@ -24,8 +24,8 @@ void Ball::draw(sf::RenderWindow& window)
 void Ball::move(float dt, sf::RenderWindow& window)
 {
 	m_shape.move(m_velocity * dt);
-
-	if (m_shape.getPosition().y < 1)
+	//checking upper and lower boundary 
+	if (m_shape.getPosition().y < getShape().getRadius())
 	{
 		bounce(1, 0);
 	}
@@ -50,10 +50,11 @@ void Ball::setSpeed(float val)
 	m_speed = val;
 	updateVelocity();
 }
-
+//update the velocity with speed
 void Ball::updateVelocity()
 {
 	m_velocity = m_speed * Vector2Func::normalize(m_velocity);
+	//normalize the velocity to get the direction, then scale it with speed
 }
 
 sf::CircleShape Ball::getShape()
@@ -63,6 +64,7 @@ sf::CircleShape Ball::getShape()
 /*indecate where the ball hit
 	up, right: 1
 	down, left: -1
+	0: no bounce
 */
 void Ball::bounce(int up, int right)
 {
@@ -83,5 +85,5 @@ void Ball::bounce(int up, int right)
 		m_velocity.x = abs(m_velocity.x);
 	}
 	//increase speed when bounce
-	setSpeed(m_speed + .1f);
+	if (m_speed < MAXSPEED && (up != 0 || right != 0))setSpeed(m_speed + 10);
 }
