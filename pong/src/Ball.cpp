@@ -4,12 +4,8 @@
 Ball::Ball(sf::Vector2f position, float radius, float speed, sf::Color color)
 {
 	// random direction
-	srand((unsigned)time(NULL));
-	m_velocity.x = (rand() % 10 + 1) * (rand() % 2) > 0 ? 1 : -1;
-	m_velocity.y = (rand() % 10 + 1) * (rand() % 2) > 0 ? 1 : -1;
 	setSpeed(speed);
-	updateVelocity();
-
+	randomDirection();
 
 	m_shape.setRadius(radius);
 	m_shape.setPosition(position);
@@ -61,6 +57,15 @@ sf::CircleShape Ball::getShape()
 {
 	return m_shape;
 }
+
+void Ball::randomDirection()
+{
+	srand((unsigned)time(NULL));
+	m_velocity.x = (rand() % 10 + 1) * (rand() % 2) > 0 ? 1 : -1;
+	m_velocity.y = (rand() % 10 + 1) * (rand() % 2) > 0 ? 1 : -1;
+	updateVelocity();
+}
+
 /*indecate where the ball hit
 	up, right: 1
 	down, left: -1

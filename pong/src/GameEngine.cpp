@@ -137,6 +137,7 @@ void GameEngine::run()
 			{
 				m_p2Score++;
 				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
+				m_ball.randomDirection();
 				predicted = false;
 				if (m_p2Score == 11)
 				{
@@ -147,6 +148,7 @@ void GameEngine::run()
 			{
 				m_p1Score++;
 				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
+				m_ball.randomDirection();
 				predicted = false;
 				if (m_p1Score == 11)
 				{

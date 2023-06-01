@@ -18,5 +18,6 @@ public:
 	void updateVelocity();
 	void bounce(int up, int right);
 	sf::CircleShape getShape();
+	void randomDirection();
 };
 
