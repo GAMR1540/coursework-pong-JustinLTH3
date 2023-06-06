@@ -6,16 +6,20 @@
 //predict where the ball goes and move the npc paddle
 void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, float& prediction, bool& predicted);
 
-//check if the ball hit the paddle. If true, call ball.bounce
+//check if the ball hit the paddle. If true, the ball bounce
 bool checkBounce(Paddle& paddle, Ball& ball);
 bool predicted = false;
 float prediction;
+
+void reset(int& m_p1Score, int& m_p2Score, Ball& m_ball, sf::RenderWindow& m_window);
+//reset when a player scores
+void roundReset(Ball& m_ball, sf::RenderWindow& m_window);
 
 GameEngine::GameEngine(sf::RenderWindow& window)
 	: m_window(window),
 	m_paddle1(sf::Vector2f(20, window.getSize().y / 2.f), 10, 100, sf::Color::White),
 	m_paddle2(sf::Vector2f(window.getSize().x - 20.f, window.getSize().y - 100.f), 10, 100, sf::Color::White),
-	m_ball(sf::Vector2f(window.getSize().x / 2.f, window.getSize().y / 2.f), 8, 400.f, sf::Color::White)
+	m_ball(sf::Vector2f(window.getSize().x / 2.f, window.getSize().y / 2.f), 8, 400.f, sf::Color::Yellow)
 {
 	m_p1Score = 0;
 	m_p2Score = 0;
@@ -29,8 +33,12 @@ GameEngine::GameEngine(sf::RenderWindow& window)
 
 	m_paddle1.setSpeed(1000.f);
 	m_paddle2.setSpeed(1000.f);
+
 	m_ballBuffer.loadFromFile(".\\assets\\audio\\beep.flac");
 	m_ballSound.setBuffer(m_ballBuffer);
+	sf::Texture* texture = new sf::Texture();
+	texture->loadFromFile(".\\assets\\texture\\basketball.png");
+	m_ball.setTexture(texture);
 }
 
 void GameEngine::draw()
@@ -71,6 +79,7 @@ void GameEngine::update()
 
 	m_hud.setString(ss.str());
 }
+
 bool checkBounce(Paddle& paddle, Ball& ball)
 {
 	sf::Vector2f paddlePos = paddle.getShape().getPosition();
@@ -95,7 +104,7 @@ bool checkBounce(Paddle& paddle, Ball& ball)
 	float tempy = (distance.y - paddle.getBounds().height / 2);
 	//the distance from the center of circle to the corner of the paddle
 	float cornerDisSqr = tempx * tempx + tempy * tempy;
-	if (cornerDisSqr <= ballRadius * ballRadius)//check if the sphere hit the corner of the rectangle
+	if (cornerDisSqr <= ballRadius * ballRadius) //check if the sphere hit the corner of the rectangle
 	{
 		ball.bounce((paddlePos.y < ballPos.y ? 1 : -1)
 			, (paddlePos.x < ballPos.x ? -1 : 1));
@@ -115,13 +124,15 @@ void GameEngine::run()
 		while (m_window.pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed) m_window.close();
-			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
-				m_window.close();
-			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+			if (event.type == sf::Event::KeyPressed)
 			{
-				m_gStates = GameStates::playing;
-				m_p1Score = 0;
-				m_p2Score = 0;
+				if (event.key.code == sf::Keyboard::Escape)
+					m_window.close();
+				if (event.key.code == sf::Keyboard::Space && m_gStates != GameStates::playing)
+				{
+					m_gStates = GameStates::playing;
+					reset(m_p1Score, m_p2Score, m_ball, m_window);
+				}
 			}
 		}
 
@@ -136,9 +147,7 @@ void GameEngine::run()
 			if (m_ball_pos_x < 0)
 			{
 				m_p2Score++;
-				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
-				m_ball.randomDirection();
-				predicted = false;
+				roundReset(m_ball, m_window);
 				if (m_p2Score == 11)
 				{
 					m_gStates = GameStates::gameOver;
@@ -147,9 +156,7 @@ void GameEngine::run()
 			else if (m_ball_pos_x > m_window.getSize().x)
 			{
 				m_p1Score++;
-				m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f);
-				m_ball.randomDirection();
-				predicted = false;
+				roundReset(m_ball, m_window);
 				if (m_p1Score == 11)
 				{
 					m_gStates = GameStates::gameOver;
@@ -173,12 +180,12 @@ void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, flo
 	sf::Vector2f ballPos = ball.getPosition();
 	sf::Vector2f paddlePos = paddle.getShape().getPosition();
 	sf::Vector2u winSize = window.getSize();
-	if (ballVel.x < 0)
+	if (ballVel.x < 0)//only move when ball moves towards npc
 	{
 		predicted = false;
 		return;
 	}
-	if (ballPos.x < winSize.x / 2)return;
+	if (ballPos.x < winSize.x / 3 * 2) return;//move when the ball passed 2/3 of the screen
 
 	if (!predicted)
 	{
@@ -199,7 +206,7 @@ void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, flo
 			prediction = (winSize.y - 1 - ball.getShape().getRadius()) * 2 - prediction;
 			continue;
 		}
-		if (prediction > 1 && !(prediction > winSize.y - 1 - ball.getShape().getRadius())) predicted = true;
+		predicted = prediction > 1 && !(prediction > winSize.y - 1 - ball.getShape().getRadius());
 	}
 	//move towards prediction
 	if (paddlePos.y > prediction)
@@ -210,4 +217,18 @@ void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, flo
 	{
 		paddle.move(dt, winSize.y);
 	}
+}
+
+void reset(int& m_p1Score, int& m_p2Score, Ball& m_ball, sf::RenderWindow& m_window)
+{
+	m_p1Score = 0;
+	m_p2Score = 0;
+	roundReset(m_ball, m_window);
+}
+void roundReset(Ball& m_ball, sf::RenderWindow& m_window)
+{
+	m_ball.setPosition(m_window.getSize().x / 2.f, m_window.getSize().y / 2.f); //set the ball to center
+	m_ball.randomDirection();
+	predicted = false;
+	m_ball.setSpeed(400);
 }

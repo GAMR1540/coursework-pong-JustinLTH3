@@ -1,5 +1,6 @@
 #include "Ball.h"
 #include <Vector2Func.h>
+#include <cmath>
 
 Ball::Ball(sf::Vector2f position, float radius, float speed, sf::Color color)
 {
@@ -61,16 +62,14 @@ sf::CircleShape Ball::getShape()
 void Ball::randomDirection()
 {
 	srand((unsigned)time(NULL));
-	m_velocity.x = (rand() % 10 + 1) * (rand() % 2) > 0 ? 1 : -1;
-	m_velocity.y = (rand() % 10 + 1) * (rand() % 2) > 0 ? 1 : -1;
+	do
+	{
+		m_velocity.x = (rand() % 10 + 1) * (rand() % 2 > 0 ? 1 : -1);
+		m_velocity.y = (rand() % 10 + 1) * (rand() % 2 > 0 ? 1 : -1);
+	} while (atan(abs(m_velocity.y / m_velocity.x)) * 180 / 3.14f > 70);//clamp angle
 	updateVelocity();
 }
 
-/*indecate where the ball hit
-	up, right: 1
-	down, left: -1
-	0: no bounce
-*/
 void Ball::bounce(int up, int right)
 {
 	if (up == 1)
@@ -91,4 +90,9 @@ void Ball::bounce(int up, int right)
 	}
 	//increase speed when bounce
 	if (m_speed < MAXSPEED && (up != 0 || right != 0))setSpeed(m_speed + 10);
+}
+void Ball::setTexture(sf::Texture* texture)
+{
+	m_shape.setTexture(texture);
+	m_shape.setOrigin(m_shape.getRadius() / 2, m_shape.getRadius() / 2);
 }
