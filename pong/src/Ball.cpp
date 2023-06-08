@@ -11,7 +11,7 @@ Ball::Ball(sf::Vector2f position, float radius, float speed, sf::Color color)
 	m_shape.setRadius(radius);
 	m_shape.setPosition(position);
 	m_shape.setFillColor(color);
-	m_shape.setOrigin(m_shape.getRadius() / 2, m_shape.getRadius() / 2);
+	m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
 }
 void Ball::draw(sf::RenderWindow& window)
 {
@@ -66,7 +66,7 @@ void Ball::randomDirection()
 	{
 		m_velocity.x = (rand() % 10 + 1) * (rand() % 2 > 0 ? 1 : -1);
 		m_velocity.y = (rand() % 10 + 1) * (rand() % 2 > 0 ? 1 : -1);
-	} while (atan(abs(m_velocity.y / m_velocity.x)) * 180 / 3.14f > 70);//clamp angle
+	} while (atan(abs(m_velocity.y / m_velocity.x)) * 180 / 3.14f > 75 || atan(abs(m_velocity.x / m_velocity.y)) * 180 / 3.14f > 75);//clamp angle
 	updateVelocity();
 }
 
@@ -94,5 +94,4 @@ void Ball::bounce(int up, int right)
 void Ball::setTexture(sf::Texture* texture)
 {
 	m_shape.setTexture(texture);
-	m_shape.setOrigin(m_shape.getRadius() / 2, m_shape.getRadius() / 2);
 }

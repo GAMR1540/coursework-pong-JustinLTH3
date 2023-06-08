@@ -8,9 +8,7 @@ class GameEngine
 {
 private:
 	sf::RenderWindow& m_window;
-	sf::Font m_font;
 	sf::Text m_hud;
-	sf::SoundBuffer m_ballBuffer;
 	sf::Sound m_ballSound;
 	sf::Clock m_clock;
 
@@ -19,8 +17,8 @@ private:
 	Paddle m_paddle2;
 	Ball m_ball;
 
-	int m_p1Score;
-	int m_p2Score;
+	int m_p1Score = 0;
+	int m_p2Score = 0;
 	static const int m_maxScore = 3;
 	enum class GameStates { intro, playing, gameOver };
 	GameStates m_gStates;
