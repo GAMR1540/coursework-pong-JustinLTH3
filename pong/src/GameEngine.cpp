@@ -58,6 +58,7 @@ void GameEngine::update()
 {
 	// update hud
 	std::stringstream ss;
+	//hud display different string based on gamestate
 	switch (m_gStates)
 	{
 	case GameStates::intro:
@@ -80,7 +81,7 @@ void GameEngine::update()
 		break;
 	}
 
-	m_hud.setString(ss.str());
+	m_hud.setString(ss.str());//set the string of the hud
 
 	//center the hud
 	float x = m_window.getSize().x / 2 - m_hud.getGlobalBounds().width / 2;
@@ -89,8 +90,11 @@ void GameEngine::update()
 
 bool checkBounce(Paddle& paddle, Ball& ball)
 {
+	//paddle position
 	sf::Vector2f paddlePos = paddle.getShape().getPosition();
+	//ball position
 	sf::Vector2f ballPos = ball.getShape().getPosition();
+	//ball radius
 	float ballRadius = ball.getShape().getRadius();
 	//x and y distance between paddle and ball
 	sf::Vector2f distance(abs(paddlePos.x - ballPos.x), abs(paddlePos.y - ballPos.y));
@@ -99,12 +103,14 @@ bool checkBounce(Paddle& paddle, Ball& ball)
 	if (distance.y > (paddle.getBounds().height / 2 + ballRadius))return false;
 	if (distance.x > (paddle.getBounds().width / 2 + ballRadius))return false;
 
+	//check if the ball touches left or right side of paddle
 	if (distance.y <= paddle.getBounds().height / 2)
 	{
 		//check which side of the paddle hit by the ball, and bounce
 		ball.bounce(0, (paddlePos.x < ballPos.x) ? -1 : 1);
 		return true;
 	}
+	//check if the ball touches top or bottom side of paddle
 	if (distance.x <= paddle.getBounds().width / 2)
 	{
 		//check which side of the paddle hit by the ball, and bounce
@@ -192,9 +198,13 @@ void GameEngine::run()
 
 void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, float& prediction, bool& predicted)
 {
+	//ball velocity
 	sf::Vector2f ballVel = ball.GetVelocity();
+	//ball position
 	sf::Vector2f ballPos = ball.getPosition();
+	//paddle position
 	sf::Vector2f paddlePos = paddle.getShape().getPosition();
+	//window size
 	sf::Vector2u winSize = window.getSize();
 	if (ballVel.x < 0)//only move when ball moves towards npc
 	{
@@ -207,7 +217,8 @@ void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, flo
 	if (!predicted)//calculate where the ball lands with velocity of the ball, when no reflection
 		prediction = (paddlePos.x - ballPos.x) / ballVel.x * ballVel.y + ballPos.y;
 	while (!predicted)
-	{//calculate reflection
+	{
+		//calculate reflection
 		if (prediction < 1)
 		{
 			prediction = 1 - prediction;
@@ -223,11 +234,11 @@ void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, flo
 	//move towards prediction
 	if (paddlePos.y > prediction)
 	{
-		paddle.move(dt, 0);
+		paddle.move(dt, 0);//move upwards
 	}
 	else if (paddlePos.y < prediction)
 	{
-		paddle.move(dt, winSize.y);
+		paddle.move(dt, winSize.y);//move downwards
 	}
 }
 

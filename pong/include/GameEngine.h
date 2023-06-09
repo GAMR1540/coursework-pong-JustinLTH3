@@ -10,10 +10,12 @@ private:
 	sf::RenderWindow& m_window;
 	sf::Text m_hud;
 	sf::Sound m_ballSound;
+	//for delta time between frames
 	sf::Clock m_clock;
 
-
+	//player paddle
 	Paddle m_paddle1;
+	//npc paddle
 	Paddle m_paddle2;
 	Ball m_ball;
 

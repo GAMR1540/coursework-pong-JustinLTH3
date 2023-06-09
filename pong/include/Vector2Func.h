@@ -4,6 +4,8 @@
 
 namespace Vector2Func
 {
-	float magnitude(sf::Vector2f vec);
-	sf::Vector2f normalize(sf::Vector2f vec);
+	//return magnitude of vec
+	float magnitude(sf::Vector2f& vec);
+	//return a normalized vector of vec
+	sf::Vector2f normalize(sf::Vector2f& vec);
 }
