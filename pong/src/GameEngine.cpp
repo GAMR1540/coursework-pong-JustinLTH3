@@ -6,7 +6,7 @@
 //predict where the ball goes and move the npc paddle
 void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, float& prediction, bool& predicted);
 
-//check if the ball hit the paddle. If true, the ball bounce and return true.
+//check if the ball hit the paddle. If the ball hit the paddle, the ball bounce and return true.
 bool checkBounce(Paddle& paddle, Ball& ball);
 bool predicted = false;
 float prediction;
@@ -96,17 +96,18 @@ bool checkBounce(Paddle& paddle, Ball& ball)
 	sf::Vector2f ballPos = ball.getShape().getPosition();
 	//ball radius
 	float ballRadius = ball.getShape().getRadius();
-	//x and y distance between paddle and ball
+	//x and y distance between paddle and ball, use abs() for easy comparision
 	sf::Vector2f distance(abs(paddlePos.x - ballPos.x), abs(paddlePos.y - ballPos.y));
 
-	//check if the ball touch the paddle
+	//check if the ball touch the paddle, return false if it does not
 	if (distance.y > (paddle.getBounds().height / 2 + ballRadius))return false;
 	if (distance.x > (paddle.getBounds().width / 2 + ballRadius))return false;
 
 	//check if the ball touches left or right side of paddle
 	if (distance.y <= paddle.getBounds().height / 2)
 	{
-		//check which side of the paddle hit by the ball, and bounce
+		//check which side of the paddle hit by the ball, and bounce.
+		//if paddlePos.x<ballPos.x, right side of the ball is hit.
 		ball.bounce(0, (paddlePos.x < ballPos.x) ? -1 : 1);
 		return true;
 	}
@@ -117,12 +118,13 @@ bool checkBounce(Paddle& paddle, Ball& ball)
 		ball.bounce((paddlePos.y < ballPos.y ? 1 : -1), 0);
 		return true;
 	}
+	//check if the sphere hit the corner of the rectangle
 	//x and y distance between the corner of paddle and the ball
 	float tempx = (distance.x - paddle.getBounds().width / 2);
 	float tempy = (distance.y - paddle.getBounds().height / 2);
 	//the distance from the center of ball to the corner of the paddle
 	float cornerDisSqr = tempx * tempx + tempy * tempy;
-	if (cornerDisSqr <= ballRadius * ballRadius) //check if the sphere hit the corner of the rectangle
+	if (cornerDisSqr <= ballRadius * ballRadius) 
 	{
 		ball.bounce((paddlePos.y < ballPos.y ? 1 : -1)
 			, (paddlePos.x < ballPos.x ? -1 : 1));
@@ -141,6 +143,10 @@ void GameEngine::run()
 		sf::Event event;
 		while (m_window.pollEvent(event))
 		{
+			/*
+			* Quit Game when closed event or press escape key.
+			* Start Game when pressing space and game has not started.
+			*/
 			if (event.type == sf::Event::Closed) m_window.close();
 			if (event.type == sf::Event::KeyPressed)
 			{
@@ -150,6 +156,7 @@ void GameEngine::run()
 				if (event.key.code == sf::Keyboard::Space && m_gStates != GameStates::playing)
 				{
 					m_gStates = GameStates::playing;
+					//reset to initial state of the game.
 					reset(m_p1Score, m_p2Score, m_ball, m_window);
 				}
 			}
@@ -211,7 +218,8 @@ void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, flo
 		predicted = false;
 		return;
 	}
-	if (ballPos.x < winSize.x / 3 * 2) return;//only move when the ball passed 2/3 of the screen to limit the strength of the npc
+	//only move when the ball passed 2/3 of the screen to limit the strength of the npc
+	if (ballPos.x < winSize.x / 3 * 2) return;
 
 	//only predict when not predicted already
 	if (!predicted)//calculate where the ball lands with velocity of the ball, when no reflection
@@ -229,7 +237,8 @@ void NPCMove(Ball& ball, sf::RenderWindow& window, Paddle& paddle, float dt, flo
 			prediction = (winSize.y - 1 - ball.getShape().getRadius()) * 2 - prediction;
 			continue;
 		}
-		predicted = prediction > 1 && !(prediction > winSize.y - 1 - ball.getShape().getRadius());//if ball lands within top and bottom, break the loop.
+		//if ball lands within top and bottom, break the loop.
+		predicted = prediction > 1 && !(prediction > winSize.y - 1 - ball.getShape().getRadius());
 	}
 	//move towards prediction
 	if (paddlePos.y > prediction)

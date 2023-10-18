@@ -66,7 +66,7 @@ void Ball::randomDirection()
 	{
 		m_velocity.x = (rand() % 10 + 1) * (rand() % 2 > 0 ? 1 : -1);
 		m_velocity.y = (rand() % 10 + 1) * (rand() % 2 > 0 ? 1 : -1);
-	} while (atan(abs(m_velocity.y / m_velocity.x)) * 180 / 3.14f > 75 || atan(abs(m_velocity.x / m_velocity.y)) * 180 / 3.14f > 75);//clamp angle
+	} while (atan(abs(m_velocity.y / m_velocity.x)) * 180 / 3.14f > 75 || atan(abs(m_velocity.x / m_velocity.y)) * 180 / 3.14f > 75);//clamp angle to prevent the ball bouncing up and down forever.
 	updateVelocity();
 }
 

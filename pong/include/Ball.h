@@ -17,7 +17,7 @@ public:
 	void setSpeed(float val);
 	//update the velocity with speed
 	void updateVelocity();
-	/*indecate where the ball hit
+	/*indecate where the ball is hit
 		up, right: 1
 		down, left: -1
 		0: no bounce
