@@ -144,7 +144,7 @@ void GameEngine::run()
 		while (m_window.pollEvent(event))
 		{
 			/*
-			* Quit Game when closed event or press escape key.
+			* Close the software when closed event or press escape key.
 			* Start Game when pressing space and game has not started.
 			*/
 			if (event.type == sf::Event::Closed) m_window.close();

@@ -8,6 +8,7 @@ class GameEngine
 {
 private:
 	sf::RenderWindow& m_window;
+	//Showing Game score, result and how to start game based on game state
 	sf::Text m_hud;
 	sf::Sound m_ballSound;
 	//for delta time between frames
